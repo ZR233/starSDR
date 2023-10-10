@@ -1,0 +1,4 @@
+[workspace]
+members = ["starsdr-interface", "starsdr-uhd"]
+resolver = "2"
+
