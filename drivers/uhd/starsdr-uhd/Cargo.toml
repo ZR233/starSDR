@@ -3,14 +3,13 @@ name = "starsdr-uhd"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+
 
 [dependencies]
-libusb-src = "1.27"
-
-
-[build-dependencies]
-cmake = "0.1"
-vcpkg="0.2"
+starsdr-interface= { path = "../../../starsdr-interface"}
+uhd-sys = { path = "../uhd-sys"}
+async-trait = "0.1"
+futures="0"
+tokio="1"

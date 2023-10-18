@@ -91,7 +91,7 @@ pub const WINT_MAX: u32 = 65535;
 pub const _CRT_USE_CONFORMING_ANNEX_K_TIME: u32 = 0;
 pub const TIME_UTC: u32 = 1;
 pub const UHD_VERSION_ABI_STRING: &[u8; 6] = b"4.5.0\0";
-pub const UHD_VERSION: u32 = 4050099;
+pub const UHD_VERSION: u32 = 4050000;
 pub type POINTER_64_INT = ::std::os::raw::c_ulonglong;
 pub type INT8 = ::std::os::raw::c_schar;
 pub type PINT8 = *mut ::std::os::raw::c_schar;
@@ -3066,6 +3066,7 @@ extern "C" {
 pub struct uhd_string_vector_t {
     _unused: [u8; 0],
 }
+
 pub type uhd_string_vector_handle = *mut uhd_string_vector_t;
 extern "C" {
     #[doc = "! Instantiate a string_vector handle."]

@@ -1,1 +1,0 @@
-bindgen uhd/host/include/uhd.h -o src/bindings.rs -- -I "C:\Users\zrufo\Documents\opensource\starsdr\target\debug\build\starsdr-uhd-e3d57c392b35232e\out\include" --target=x86_64-pc-windows-msvc

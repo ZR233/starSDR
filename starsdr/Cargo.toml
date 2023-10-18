@@ -1,0 +1,17 @@
+[package]
+name = "starsdr"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+driver-uhd= ["dep:starsdr-uhd"]
+all = ["driver-uhd"]
+
+
+[dependencies]
+starsdr-interface={path = "../starsdr-interface"}
+starsdr-uhd={path = "../drivers/uhd/starsdr-uhd", optional = true }
+[dev-dependencies]
+tokio={version = "1", features = ["full"]}
