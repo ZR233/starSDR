@@ -1,31 +1,22 @@
-use std::error::Error;
+pub use starsdr_interface::{SDRDriver, SDRDevice, SDRResult};
+#[cfg(feature="driver-uhd")]
+pub use starsdr_uhd::{DriverUHD, DeviceUHD};
 
-use starsdr_interface::{Driver, SDRDevice};
 
-pub struct SDR{
-    drivers: Vec<Box<dyn Driver>> ,
+pub struct SDR<D>
+    where D: SDRDriver{
+    driver: D ,
 }
+
 #[allow(unused)]
-impl SDR{
+impl <D: SDRDriver> SDR <D>{
 
-    async fn new() -> Result<Self, Box<dyn Error>> {
-        let mut drivers: Vec<Box<dyn Driver>> = vec![];
-
-        #[cfg(feature = "driver-uhd")]
-        {
-            drivers.push(Box::new(starsdr_uhd::DriverUHD::new()));
-        }
-
-
-        Ok(Self { drivers })
+    pub fn new(driver: D)->Self{
+        Self { driver }
     }
 
-    async fn device_list(&self) -> Vec<Box<dyn SDRDevice>> {
-        let mut out: Vec<Box<dyn SDRDevice>> = vec![];
-        for driver in self.drivers.iter() {
-            out.append(&mut driver.list().await);
-        }
-        out
+    pub fn device_list(&self) -> SDRResult<Vec<D::Item>> {
+        self.driver.list()
     }
 }
 
@@ -35,9 +26,14 @@ mod tests {
     #[tokio::test]
     async fn test_device_list() {
 
-        let sdr = SDR::new().await.unwrap();
+        let sdr = SDR::new(DriverUHD::new());
 
-        let devices = sdr.device_list().await;
+        let devices = sdr.device_list().unwrap();
+
+        for d in devices.iter(){
+            println!("{}", d);
+        }
+
         assert_ne!(devices.len(), 0);
     }
 }

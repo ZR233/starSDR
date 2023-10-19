@@ -1,13 +1,15 @@
-use async_trait::async_trait;
+mod error;
+use std::fmt::Display;
 
+pub use error::{SDRError, SDRResult};
 
-#[async_trait]
-pub trait Driver: Send {
-   async fn __dyn(&self) where Self: Sized {}
-   async fn list(&self)->Vec<Box<dyn SDRDevice>>; 
+pub trait SDRDriver: Send {
+   type Item : SDRDevice;
+   fn list(&self)->SDRResult<Vec<Self::Item>>; 
 }
 
 
 
-pub trait SDRDevice: Send {
+pub trait SDRDevice: Send + Display {
+   fn open(&mut self)->SDRResult<()>;
 }
