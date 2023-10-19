@@ -13,3 +13,4 @@ uhd-sys = { path = "../uhd-sys"}
 async-trait = "0.1"
 futures="0"
 tokio="1"
+num = "0.4"
