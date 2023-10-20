@@ -1,7 +1,8 @@
 mod error;
 pub use error::{SDRError, SDRResult};
-use std::{fmt::Display, sync::mpsc::{Sender, SendError}};
-
+use std::{fmt::Display};
+pub use num::{Complex};
+use num::Zero;
 
 
 pub trait SDRDriver: Send {
@@ -17,10 +18,18 @@ pub trait SDRDevice: Send + Display {
 }
 
 pub trait CreateTx<I: Send, T: Tx<I>> {
-   fn tx_stream(&self, channels: &[usize]) -> SDRResult<T>;
+   fn tx_stream(&self, channels: &[usize]) -> SDRResult<T> ;
 }
 
 pub trait Tx<Item: Send>: Send{
-   fn send(&self, v: &[Item])->SDRResult<usize>;
+   fn send(&self, v: &[Complex<Item>])->SDRResult<usize>;
+}
+
+pub trait CreateRx<I: Send, T: Rx<I>> {
+    fn rx_stream(&self, channels: &[usize]) -> SDRResult<T> ;
+}
+
+pub trait Rx<Item: Send>: Send{
+    fn recv(&mut self)->SDRResult<Vec<Complex<Item>>>;
 }
 

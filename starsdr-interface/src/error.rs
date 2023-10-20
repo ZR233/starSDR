@@ -16,6 +16,10 @@ pub enum SDRError {
         value: String,
         msg: String,
     },
+    #[error("Timeout!")]
+    TimeOut,
+    #[error("Overflow")]
+    Overflow,
 }
 
 pub type SDRResult<T> = Result<T, SDRError>;

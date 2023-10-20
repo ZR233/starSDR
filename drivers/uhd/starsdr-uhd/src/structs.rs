@@ -11,6 +11,7 @@ pub(crate) struct UHDStringVector {
     index: usize,
     ptr: uhd_string_vector_handle,
 }
+
 impl UHDStringVector {
     pub fn new() -> Self {
         unsafe {
@@ -28,6 +29,7 @@ impl UHDStringVector {
         &mut self.ptr
     }
 }
+
 impl Iterator for UHDStringVector {
     type Item = String;
 
@@ -42,12 +44,12 @@ impl Iterator for UHDStringVector {
             s
         });
         if self.index < size {
-            let mut buffer= [0u8; 1024];
+            let mut buffer = [0u8; 1024];
             unsafe {
                 uhd_string_vector_at(self.ptr, self.index, buffer.as_mut_ptr() as _, buffer.len());
             }
             self.index += 1;
-            let c= CStr::from_bytes_until_nul(&buffer).unwrap();
+            let c = CStr::from_bytes_until_nul(&buffer).unwrap();
             Some(c.to_string_lossy().to_string())
             // Some(String::from_utf8(buffer).unwrap())
         } else {
@@ -64,28 +66,37 @@ impl Drop for UHDStringVector {
     }
 }
 
-pub(crate) struct TxStreamerHandle(pub uhd_tx_streamer_handle);
-unsafe impl Send for TxStreamerHandle {}
-
-impl TxStreamerHandle {
-    pub fn new() -> SDRResult<Self> {
-        unsafe {
-            let mut streamer = null_mut();
-            handle_uhd_err(uhd_tx_streamer_make(&mut streamer))?;
-
-            Ok(Self(streamer))
+macro_rules! type_uhd_handle {
+    ($name:ident,$raw_handle:ident, $make_fun:ident, $free_fun:ident) => {
+        pub(crate) struct $name(pub $raw_handle);
+        unsafe impl Send for $name {}
+        impl $name {
+            pub fn new() -> SDRResult<Self> {
+                unsafe {
+                    let mut handle = null_mut();
+                    handle_uhd_err($make_fun(&mut handle))?;
+                    Ok(Self(handle))
+                }
+            }
         }
-    }
-}
-impl Drop for TxStreamerHandle {
+
+impl Drop for $name{
     fn drop(&mut self) {
         unsafe {
-            uhd_tx_streamer_free(&mut self.0);
+            $free_fun(&mut self.0);
         }
     }
 }
+    };
+}
+
+type_uhd_handle!(TxStreamerHandle, uhd_tx_streamer_handle, uhd_tx_streamer_make, uhd_tx_streamer_free);
+type_uhd_handle!(RxStreamerHandle, uhd_rx_streamer_handle, uhd_rx_streamer_make, uhd_rx_streamer_free);
+type_uhd_handle!(RxMetadataHandle, uhd_rx_metadata_handle, uhd_rx_metadata_make, uhd_rx_metadata_free);
+
 
 pub(crate) struct TxMetadataHandle(pub uhd_tx_metadata_handle);
+
 unsafe impl Send for TxMetadataHandle {}
 
 impl TxMetadataHandle {
@@ -93,14 +104,15 @@ impl TxMetadataHandle {
         unsafe {
             let mut md = null_mut();
             handle_uhd_err(uhd_tx_metadata_make(
-                &mut md, 
-                false, 0, 
+                &mut md,
+                false, 0,
                 0.1, true, false))?;
 
             Ok(Self(md))
         }
     }
 }
+
 impl Drop for TxMetadataHandle {
     fn drop(&mut self) {
         unsafe {
