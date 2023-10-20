@@ -1,0 +1,3 @@
+[submodule "starsdr-uhd/uhd"]
+	path = starsdr-uhd/uhd
+	url = git@github.com:ZR233/uhd.git

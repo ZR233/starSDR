@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "starsdr-interface", 
+    "drivers/uhd/uhd-sys",
+    "drivers/uhd/starsdr-uhd",
+    "starsdr"
+    ]
+resolver = "2"
+
