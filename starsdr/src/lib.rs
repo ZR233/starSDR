@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate log;
-
 pub use starsdr_interface::*;
 #[cfg(feature = "driver-uhd")]
 pub use starsdr_uhd::*;
@@ -24,7 +21,8 @@ impl<D: SDRDriver> SDR<D> {
 
 #[cfg(test)]
 mod tests {
-    use std::{thread, time::Duration};
+    use log::debug;
+
     use log::LevelFilter::Debug;
 
     use num::{Zero, complex::Complex32, Complex};

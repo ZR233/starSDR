@@ -1,19 +1,18 @@
 use errors::handle_uhd_err;
-use num::complex::{Complex32, Complex64};
+
 use starsdr_interface::*;
 use std::{
-    ffi::{CString, c_void},
+    ffi::{CString},
     fmt::Display,
     marker::PhantomData,
-    ptr::{null_mut, slice_from_raw_parts_mut, slice_from_raw_parts},
+    ptr::{null_mut},
     sync::{
-        mpsc::{SendError, Sender},
         Arc, RwLock,
-    }, cell::{Cell, UnsafeCell},
+    },
 };
-use std::ffi::CStr;
-use log::debug;
-use num::{Complex, Zero};
+
+
+
 use uhd_sys::*;
 
 pub(crate) mod errors;

@@ -2,7 +2,7 @@ mod error;
 pub use error::{SDRError, SDRResult};
 use std::{fmt::Display};
 pub use num::{Complex};
-use num::Zero;
+
 
 
 pub trait SDRDriver: Send {

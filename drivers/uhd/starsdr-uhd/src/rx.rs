@@ -39,6 +39,7 @@ impl <T:Send> Rx<T> for RxUHD<T> {
             let mut code = 0;
             uhd_rx_metadata_error_code(self.md.0, &mut code);
 
+            #[allow(non_upper_case_globals)]
             match code {
                 uhd_rx_metadata_error_code_t_UHD_RX_METADATA_ERROR_CODE_NONE=>Ok(buf),
                 uhd_rx_metadata_error_code_t_UHD_RX_METADATA_ERROR_CODE_OVERFLOW=>Err(SDRError::Overflow),

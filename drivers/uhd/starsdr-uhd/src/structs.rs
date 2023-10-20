@@ -1,4 +1,4 @@
-use std::ffi::{CStr, CString};
+use std::ffi::{CStr};
 use std::ptr::null_mut;
 
 use starsdr_interface::SDRResult;
