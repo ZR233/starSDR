@@ -1,15 +1,17 @@
 use errors::handle_uhd_err;
-use num::complex::Complex64;
+use num::complex::{Complex32};
 use starsdr_interface::*;
 use std::{
+    ffi::{CString, c_void},
     fmt::Display,
     marker::PhantomData,
-    ptr::null_mut,
+    ptr::{null_mut, slice_from_raw_parts_mut, slice_from_raw_parts},
     sync::{
         mpsc::{SendError, Sender},
         Arc, RwLock,
-    },
+    }, cell::{Cell, UnsafeCell},
 };
+use log::debug;
 use uhd_sys::*;
 pub(crate) mod errors;
 pub(crate) mod structs;
@@ -69,6 +71,9 @@ impl DeviceUHD {
         F: FnOnce(uhd_usrp_handle) -> SDRResult<R>,
     {
         let g = self.usrp.read().unwrap();
+        if g.0.is_null() {
+            return Err(SDRError::NotOpen);
+        }
         f(g.0)
     }
 }
@@ -106,35 +111,67 @@ impl SDRDevice for DeviceUHD {
         })
     }
 }
-impl CreateTx<Complex64, TxUHD<Complex64>> for DeviceUHD {
-    fn tx_stream(&self, channels: &[usize]) -> SDRResult<TxUHD<Complex64>> {
-        todo!()
+impl CreateTx<Complex32, TxUHD<Complex32>> for DeviceUHD {
+    fn tx_stream(&self, channels: &[usize]) -> SDRResult<TxUHD<Complex32>> {
+        unsafe {
+            let streamer = TxStreamerHandle::new()?;
+            let cpu_fmt = CString::new("fc32").unwrap();
+            let otw_fmt = CString::new("sc16").unwrap();
+
+            let mut stream_args = uhd_stream_args_t {
+                cpu_format: cpu_fmt.as_ptr() as _,
+                otw_format: otw_fmt.as_ptr() as _,
+                args: "".as_ptr() as _,
+                channel_list: channels.as_ptr() as _,
+                n_channels: channels.len() as _,
+            };
+            let mut sample_num_max = 0;
+            self.use_usrp(|h| {
+                handle_uhd_err(uhd_usrp_get_tx_stream(h, &mut stream_args, streamer.0))?;
+                handle_uhd_err(uhd_tx_streamer_max_num_samps(streamer.0, &mut sample_num_max))?;
+                Ok(())
+            })?;
+
+            Ok(TxUHD {
+                streamer,
+                sample_num_max,
+                _t: PhantomData,
+            })
+        }
     }
 }
 
-pub struct TxUHD<T> {
-    inner: USRPInner,
-    streamer: uhd_tx_streamer_handle,
-    md: uhd_tx_metadata_handle,
+pub struct TxUHD<T: Send> {
+    streamer: TxStreamerHandle,
+    pub sample_num_max: usize,
     _t: PhantomData<T>,
 }
-unsafe impl Send for TxUHD<Complex64> {}
 
-impl Tx<Complex64> for TxUHD<Complex64> {
-    fn send(v: &[Complex64]) -> Result<(), SendError<&[Complex64]>> {
-        todo!()
+impl <T: Send> Tx<T> for TxUHD<T> {
+    fn send(&self, v: &[T]) -> SDRResult<usize> {
+        if v.len() > self.sample_num_max {
+            return Err(SDRError::Param {
+                key: "v".into(),
+                value: format!("len()={}", v.len()),
+                msg: format!("> max: {}", self.sample_num_max),
+            });
+        }
+        let mut items_sent = 0;
+        let mut md = TxMetadataHandle::new()?;
+        unsafe{
+            let buf1 = v.as_ptr() as *const c_void;
+            let buf2 = &*buf1;
+            let buf3 = buf2 as *const c_void;
+            let buf4 = &buf3 as *const *const c_void;
+            let buf5 = buf4 as *mut *const c_void;
+            // let md = &self.md.0 as *const uhd_tx_metadata_handle;
+            handle_uhd_err(uhd_tx_streamer_send(
+                self.streamer.0,  buf5,
+                 v.len(), &mut md.0 , 0.1, &mut items_sent))?;
+        }
+
+        Ok(items_sent)
     }
-
-    // fn new(channels: &[usize], device: Self::D)->SDRResult<Self> {
-    //     unsafe{
-    //         let mut streamer = null_mut();
-    //         handle_uhd_err(uhd_tx_streamer_make(&mut streamer))?;
-    //         let mut md = null_mut();
-    //         handle_uhd_err(uhd_tx_metadata_make(&mut md, false, 0, 0.1, true, false))?;
-
-    //         Ok(Self { inner: device, streamer, md, _t: PhantomData })
-    //     }
-    // }
 }
 
 impl Drop for DeviceUHD {

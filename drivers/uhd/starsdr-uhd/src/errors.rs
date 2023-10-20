@@ -1,3 +1,5 @@
+use std::ffi::CStr;
+
 use starsdr_interface::*;
 use uhd_sys::*;
 
@@ -14,6 +16,8 @@ fn uhd_get_error_str()->String{
     unsafe{
         let mut buffer = vec![0u8; 2048];
         uhd_get_last_error(buffer.as_mut_ptr() as _, buffer.len());
-        String::from_utf8(buffer).unwrap()
+        let out = CStr::from_bytes_until_nul(&buffer).unwrap();
+        let out = out.to_string_lossy();
+        out.to_string()
     }
 }

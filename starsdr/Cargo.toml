@@ -14,5 +14,7 @@ all = ["driver-uhd"]
 starsdr-interface={path = "../starsdr-interface"}
 starsdr-uhd={path = "../drivers/uhd/starsdr-uhd", optional = true }
 num="0.4"
+log="0.4"
 [dev-dependencies]
 tokio={version = "1", features = ["full"]}
+env_logger = "0.10"

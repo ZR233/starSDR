@@ -16,10 +16,11 @@ pub trait SDRDevice: Send + Display {
     
 }
 
-pub trait CreateTx<I, T: Tx<I>> {
+pub trait CreateTx<I: Send, T: Tx<I>> {
    fn tx_stream(&self, channels: &[usize]) -> SDRResult<T>;
 }
 
-pub trait Tx<Item>: Send{
-   fn send(v: &[Item])->Result<(), SendError<&[Item]>>;
+pub trait Tx<Item: Send>: Send{
+   fn send(&self, v: &[Item])->SDRResult<usize>;
 }
+
