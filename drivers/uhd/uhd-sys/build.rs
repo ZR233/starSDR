@@ -1,10 +1,10 @@
-use std::{env, path::PathBuf};
+use std::{env, path::PathBuf, error::Error};
 
-fn main() {
+fn main()->Result<(), Box<dyn Error>> {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let uhd = from_env().unwrap_or_else(|| {
         println!("env[UHD_ROOT] not found");
-        from_sys().expect("Can't find uhd")
+        from_sys().expect("Can't find uhd, you can set env [UHD_ROOT]")
     });
 
     if env::var("CARGO_CFG_TARGET_FAMILY").unwrap() == "windows" {
@@ -22,6 +22,8 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", uhd.lib.display());
     println!("cargo:rustc-link-search={}", out_dir.display());
     println!("cargo:rustc-link-lib=uhd");
+
+    Ok(())
 }
 
 fn from_env() -> Option<UHDInfo> {
