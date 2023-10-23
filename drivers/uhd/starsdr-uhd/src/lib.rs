@@ -42,8 +42,8 @@ impl SDRDriver for DriverUHD {
         unsafe {
             let mut strings_out = UHDStringVector::new();
 
-            let args = "";
-            let r = uhd_usrp_find(args.as_ptr() as _, strings_out.as_mut_ptr());
+            let args = CString::new("").unwrap();
+            let r = uhd_usrp_find(args.as_ptr(), strings_out.as_mut_ptr());
             handle_uhd_err(r)?;
 
             for s in strings_out {
