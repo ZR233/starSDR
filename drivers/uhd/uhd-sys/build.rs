@@ -1,7 +1,9 @@
-use std::{env, path::PathBuf, error::Error};
+use std::{env, path::PathBuf, error::Error, fs::read_dir};
 
 fn main()->Result<(), Box<dyn Error>> {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let deps_dir = out_dir.parent().unwrap().parent().unwrap().parent().unwrap().join("deps");
+
     let uhd = from_env().unwrap_or_else(|| {
         println!("env[UHD_ROOT] not found");
         from_sys().expect("Can't find uhd, you can set env [UHD_ROOT]")
@@ -22,6 +24,13 @@ fn main()->Result<(), Box<dyn Error>> {
     println!("cargo:rustc-link-search=native={}", uhd.lib.display());
     println!("cargo:rustc-link-search={}", out_dir.display());
     println!("cargo:rustc-link-lib=uhd");
+
+    let dyn_libs = get_all_dynlib(out_dir);
+    for lib in &dyn_libs{
+        let dst = deps_dir.join(lib.file_name().unwrap());
+        println!("uhd-sys copy {} -> {}", lib.display(), dst.display());
+        std::fs::copy(lib, dst).unwrap();
+    }
 
     Ok(())
 }
@@ -52,8 +61,29 @@ fn from_sys() -> Option<UHDInfo> {
 
     None
 }
+fn get_all_dynlib(out_dir: PathBuf)->Vec<PathBuf>{
+    let patten = if env::var("CARGO_CFG_TARGET_FAMILY").unwrap() == "windows" {
+        "dll"
+    }else{
+        "so"
+    };
 
-struct UHDInfo {
+    read_dir(out_dir).unwrap().into_iter().filter(|file|{
+        file.as_ref().is_ok_and(|file|{
+            if let Some(ext ) = file.path().extension(){
+                if let Some(e)=ext.to_str(){
+                    return  e == patten;
+                };
+            }
+            false
+        })        
+    }).map(|f|{
+        f.unwrap().path()
+    }).collect()
+}
+
+
+struct UHDInfo{
     lib: PathBuf,
     bin: PathBuf,
 }

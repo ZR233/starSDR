@@ -14,6 +14,22 @@ pub trait SDRDevice: Send + Display {
     fn open(&mut self) -> SDRResult<()>;
     fn tx_channel_count(&self) -> SDRResult<usize>;
     fn rx_channel_count(&self) -> SDRResult<usize>;
+    fn set_tx_rate(&self, rate: f64, channel: usize)-> SDRResult<()>; 
+    fn get_tx_rate(&self, channel: usize)->SDRResult<f64>;
+    fn set_tx_freq(&self, freq: f64, channel: usize)-> SDRResult<()>; 
+    fn get_tx_freq(&self, channel: usize)->SDRResult<f64>;
+    fn set_tx_gain(&self, gain: f64, channel: usize)->SDRResult<()>;
+    fn get_tx_gain(&self, channel: usize)->SDRResult<f64>;
+    fn set_tx_bandwidth(&self, bw: f64, channel: usize)->SDRResult<()>;
+    fn get_tx_bandwidth(&self, channel: usize)->SDRResult<f64>;
+    fn set_rx_rate(&self, rate: f64, channel: usize)-> SDRResult<()>; 
+    fn get_rx_rate(&self, channel: usize)->SDRResult<f64>;
+    fn set_rx_freq(&self, freq: f64, channel: usize)-> SDRResult<()>; 
+    fn get_rx_freq(&self, channel: usize)->SDRResult<f64>;
+    fn set_rx_gain(&self, gain: f64, channel: usize)->SDRResult<()>;
+    fn get_rx_gain(&self, channel: usize)->SDRResult<f64>;
+    fn set_rx_bandwidth(&self, bw: f64, channel: usize)->SDRResult<()>;
+    fn get_rx_bandwidth(&self, channel: usize)->SDRResult<f64>;
     
 }
 
