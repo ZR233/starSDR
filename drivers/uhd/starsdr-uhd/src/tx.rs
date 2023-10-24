@@ -35,4 +35,3 @@ impl<T: Send> Tx<T> for TxUHD<T> {
         Ok(items_sent)
     }
 }
-
